@@ -3,14 +3,25 @@
 <head>
   <meta charset="UTF-8" />
   <title>Your Strava Rides</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 1rem; }
+    button:disabled { opacity: 0.6; cursor: not-allowed; }
+    ul { list-style-type: none; padding-left: 0; }
+    li { margin-bottom: 0.7rem; }
+    button { margin-left: 1rem; padding: 0.3rem 0.6rem; }
+    #loading { font-style: italic; margin-bottom: 1rem; }
+  </style>
 </head>
 <body>
   <h1>Your Recent Bike Rides</h1>
+  <div id="loading">Loading activities...</div>
   <ul id="ride-list"></ul>
 
   <script>
     const params = new URLSearchParams(window.location.search);
     const sessionId = params.get("session_id");
+    const loadingDiv = document.getElementById("loading");
+    const list = document.getElementById("ride-list");
 
     if (!sessionId) {
       document.body.innerHTML = "<p>Session ID missing in URL.</p>";
@@ -21,7 +32,7 @@
           return res.json();
         })
         .then(data => {
-          const list = document.getElementById("ride-list");
+          loadingDiv.style.display = "none";
 
           if (!Array.isArray(data)) {
             list.innerHTML = `<li>Unexpected response format.</li>`;
@@ -52,6 +63,7 @@
           });
         })
         .catch(err => {
+          loadingDiv.style.display = "none";
           console.error("Fetch error:", err);
           document.body.innerHTML = `<p>Failed to load activities. ${err.message}</p>`;
         });
@@ -89,3 +101,4 @@
   </script>
 </body>
 </html>
+
