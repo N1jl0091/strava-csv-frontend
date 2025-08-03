@@ -36,20 +36,54 @@
           data.forEach(ride => {
             const item = document.createElement("li");
 
-            // Defensive rendering
             const name = ride.name || "Unnamed Ride";
             const km = ride.distance ? (ride.distance / 1000).toFixed(2) : "N/A";
             const date = ride.start_date
               ? new Date(ride.start_date).toLocaleDateString()
               : "Unknown Date";
 
-            item.textContent = `${name} — ${km} km on ${date}`;
+            const button = document.createElement("button");
+            button.textContent = "Download CSV";
+            button.onclick = () => downloadCSV(ride.id, button);
+
+            item.textContent = `${name} — ${km} km on ${date} `;
+            item.appendChild(button);
             list.appendChild(item);
           });
         })
         .catch(err => {
           console.error("Fetch error:", err);
           document.body.innerHTML = `<p>Failed to load activities. ${err.message}</p>`;
+        });
+    }
+
+    function downloadCSV(activityId, button) {
+      const originalText = button.textContent;
+      button.disabled = true;
+      button.textContent = "Generating...";
+
+      const url = `https://strava-csv-backend-production.up.railway.app/streams?session_id=${sessionId}&activity_id=${activityId}`;
+      fetch(url)
+        .then(response => {
+          if (!response.ok) throw new Error("Failed to download CSV.");
+          return response.blob();
+        })
+        .then(blob => {
+          const blobUrl = URL.createObjectURL(blob);
+          const link = document.createElement("a");
+          link.href = blobUrl;
+          link.download = `activity_${activityId}.csv`;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          URL.revokeObjectURL(blobUrl);
+        })
+        .catch(error => {
+          alert("Error downloading CSV: " + error.message);
+        })
+        .finally(() => {
+          button.disabled = false;
+          button.textContent = originalText;
         });
     }
   </script>
