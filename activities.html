@@ -69,35 +69,37 @@
         });
     }
 
-    function downloadCSV(activityId, button) {
-      const originalText = button.textContent;
-      button.disabled = true;
-      button.textContent = "Generating...";
+   function downloadCSV(activityId, button) {
+  const originalText = button.textContent;
+  button.disabled = true;
+  button.textContent = "Generating...";
 
-      const url = `https://strava-csv-backend-production.up.railway.app/streams?session_id=${sessionId}&activity_id=${activityId}`;
-      fetch(url)
-        .then(response => {
-          if (!response.ok) throw new Error("Failed to download CSV.");
-          return response.blob();
-        })
-        .then(blob => {
-          const blobUrl = URL.createObjectURL(blob);
-          const link = document.createElement("a");
-          link.href = blobUrl;
-          link.download = `activity_${activityId}.csv`;
-          document.body.appendChild(link);
-          link.click();
-          document.body.removeChild(link);
-          URL.revokeObjectURL(blobUrl);
-        })
-        .catch(error => {
-          alert("Error downloading CSV: " + error.message);
-        })
-        .finally(() => {
-          button.disabled = false;
-          button.textContent = originalText;
-        });
-    }
+  const url = `https://strava-csv-backend-production.up.railway.app/activity-stream?session_id=${sessionId}&activity_id=${activityId}`;
+  
+  fetch(url)
+    .then(response => {
+      if (!response.ok) throw new Error("Failed to download CSV.");
+      return response.blob();
+    })
+    .then(blob => {
+      const blobUrl = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = blobUrl;
+      link.download = `activity_${activityId}.csv`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(blobUrl);
+    })
+    .catch(error => {
+      alert("Error downloading CSV: " + error.message);
+    })
+    .finally(() => {
+      button.disabled = false;
+      button.textContent = originalText;
+    });
+}
+
   </script>
 </body>
 </html>
