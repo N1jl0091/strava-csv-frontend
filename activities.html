@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Your Strava Rides</title>
+</head>
+<body>
+  <h1>Your Recent Bike Rides</h1>
+  <ul id="ride-list"></ul>
+
+  <script>
+    // Extract session_id from URL
+    const params = new URLSearchParams(window.location.search);
+    const sessionId = params.get("session_id");
+
+    if (!sessionId) {
+      document.body.innerHTML = "<p>Session ID missing in URL.</p>";
+    } else {
+      fetch(`https://strava-csv-backend-production.up.railway.app/activities?session_id=${sessionId}`)
+        .then(res => res.json())
+        .then(data => {
+          const list = document.getElementById("ride-list");
+
+          if (data.error) {
+            list.innerHTML = `<li>${data.error}</li>`;
+            return;
+          }
+
+          data.forEach(ride => {
+            const item = document.createElement("li");
+            item.textContent = `${ride.name} — ${ride.distance / 1000} km on ${new Date(ride.start_date).toLocaleDateString()}`;
+            list.appendChild(item);
+          });
+        })
+        .catch(err => {
+          document.body.innerHTML = `<p>Failed to load activities. ${err.message}</p>`;
+        });
+    }
+  </script>
+</body>
+</html>
